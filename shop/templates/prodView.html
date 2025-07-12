@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title%} {{product.product_name}} - Buyer's Stop{% endblock %}
+{%block css%}
+<style>
+  body{
+    background-color: #BFC7D1;
+  }
+</style>
+{%endblock%}
+{% block body %}
+<div class="container my-4">
+    {% comment %} product image and add to cart and buy now buttons {% endcomment %}
+    <div class="row">
+    <div class="col-md-4">
+    <div class="row">
+        {% comment %} <!--In Django templates, we can render variables by putting them inside {{ }} brackets:--> {% endcomment %}
+        <img src="/media/{{product.image}}" width="320px" height="410px">
+    </div>
+        <div class="row my-3">
+            <button class="btn btn-primary mx-3">Buy Now</button>
+            <button class="btn btn-primary">Add To Cart</button>
+        </div>
+    </div>
+    {% comment %} information of products {% endcomment %}
+    <div class="col-md-8">
+        <h3>{{product.product_name}}</h3>
+        <h6><b>Rs.{{product.price}} </b></h6>
+        <p>{{product.desc}}</p>
+    </div>
+    </div>
+</div>
+{% endblock %}
+

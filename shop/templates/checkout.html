@@ -1,0 +1,112 @@
+{%extends 'base.html' %}
+{%block title%}
+CheckOut - Buyer's Stop
+{%endblock%}
+{%block css%}
+<style>
+  body{
+    background-color: #BFC7D1;
+  }
+</style>
+{%endblock%}
+{% block body %}
+<div class="container">
+    <div class="col my-4">
+        <h2>Step 1 - Buyer's Stop Checkout - Review Your Cart Items</h2>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+            </ul>
+        </div>
+    </div>
+    <div class="col my-4">
+        <h2>Step 2 - Enter Address & Other Details:</h2>
+        <form method="post" action="/shop/checkout/">{% csrf_token %}
+            <!--hidden input for sedning json to database-->
+            <input type="hidden" name="itemsJson" id="itemsJson">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputname">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress">Address</label>
+                <input type="text" class="form-control" id="address1" name="address1" placeholder="1234 Main St" required>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress2">Address line 2</label>
+                <input type="text" class="form-control" id="address2" name="address2" placeholder="Apartment, studio, or floor">
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputCity">City</label>
+                    <input type="text" class="form-control" id="city" name="city" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputState">State</label>
+                    <input type="text" class="form-control" id="state" name="state"  placeholder="Enter State" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="inputZip">Zip</label>
+                    <input type="text" class="form-control" id="zip_code" name="zip_code" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputZip">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone">
+            </div>
+            <button type="submit" class="btn btn-primary">Place Order</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    //when the cart items are null
+if (localStorage.getItem('cart') == null) {
+    var cart = {};
+} 
+//if not null then from localStorage.getItem method fetch the value of cart
+//The localStorage object allows you to save key/value pairs in the browser.
+//It stores data with no expiration date.
+//The data is not deleted when the browser is closed, and are available for future sessions.
+else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+}
+var sum = 0;
+if ($.isEmptyObject(cart)) {
+    //if object is empty then print the follwoing statements
+    //a variable is created in which statement for empty cart is written whihc will be appended to #item (<ul class="list-group" id="items"> inside         <div class="my-4"> )
+    mystr = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`
+    $('#items').append(mystr);
+} 
+//if object is not empty then from cart array name and quantity will be fetched and stored in two different varibales - name and qty
+else {
+    for (item in cart) {
+        let name = cart[item][1];
+        let qty = cart[item][0];
+        sum = sum + qty;
+        //Similarly variables with statements will be appended to the li tag and span tag
+        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+        $('#items').append(mystr);
+    }
+}
+document.getElementById('cart').innerHTML = sum;
+//JSON is a text format for storing and transporting data. If we parse the JSON string with a JavaScript program, you can access the data as an object.
+//Here json is stored in the hidden input tag (<input type="hidden" name="itemsJson" id="itemsJson">)
+$('#itemsJson').val(JSON.stringify(cart));
+{% if thank %}
+alert('Thanks for ordering with us. Your order is {{id}}. Use it to track your order using our order tracker');
+//As soon as the order is placed local storage should be cleared and it should be redirected to /shop page
+localStorage.clear();
+document.location = "/shop";
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{%extends 'base.html' %}
+{%block title%}
+Tracker - Buyer's Stop
+{%endblock%}
+{%block css%}
+<style>
+  body{
+    background-color: #BFC7D1;
+  }
+</style>
+{%endblock%}
+{% block body %}
+<div class="container">
+    <div class="col my-4">
+        <h2>Enter your Order Id and Email address to track your order</h2>
+        <form method="post" action="#" id="trackerForm">{% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputname">Order Id</label>
+                    <input type="text" class="form-control" id="orderId" name="orderId" placeholder="Order Id" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </div>
+    </div>
+    <div class="col my-4">
+        <h2>Your Order Status</h2>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+                Enter your order Id and Email and click Track Order to find details about your order!
+            </ul>
+        </div>
+        <h2>Your Order Details</h2>
+        <div class="my-4">
+            <ul class="list-group" id="citems">
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    //when the tracker form is submitted, jquery code should be activated
+    //order id, csrfmiddlewaretoken value and email should be stored in formData dictionary
+    //CSRF stands for Cross Site Request Forgery, and it is said to occurs when a malicious Web site deceives users into unwillingly and unknowingly loading a URL from a site where they've previously been authenticated, thus exploiting their status and also putting the data at risk.
+    //Now when you make a POST request for example, the following happens
+// You send the csrfmiddlewaretoken
+//Django unmasks the csrf cookie (csrftoken) (after version 4.1 csrf cookie is not masked so it just gets the value)
+//Django unmasks the token you sent (csrfmiddlewaretoken)
+//Django compares them. If the two match, you're ok 
+$('#trackerForm').submit(function(event) {
+    $('#items').empty();
+    var formData = {
+        'orderId': $('input[name=orderId]').val(),
+        'email': $('input[name=email]').val(),
+        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+    };
+    $.ajax({
+            type: 'POST',
+            url: '/shop/tracker/',
+            data: formData,
+            encode: true
+        })
+        .done(function(data) {
+           // console.log(data)
+            data = JSON.parse(data);
+            console.log("data",data)
+            updates = data[0];
+            if (updates.length > 0 & updates != {}) {
+                for (i = 0; i < updates.length; i++) {
+                    let text = updates[i]['text'];
+                    let time = updates[i]['time'];
+                    mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${text}
+                    <span class="badge badge-primary badge-pill">${time}</span>
+                </li>`
+                    $('#items').append(mystr);
+                }
+            } else {
+                mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Sorry, We are not able to fetch this order id and email. Make sure to type correct order Id and email</li>`
+                $('#items').append(mystr);
+            }
+            // Fill in the order details
+            cart = JSON.parse(data[1]);
+            //cart is an array which has quantity and names of items 
+            //console.log(cart);
+            for (item in cart) {
+                let name = cart[item][1];
+                let qty = cart[item][0];
+                //it will be iterated and dispalyed in the brower in the following tags
+                mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+                $('#citems').append(mystr);
+            }
+        });
+        //The preventDefault() method cancels the event if it is cancelable, meaning that the default action that belongs to the event will not occur. For example, this can be useful when: Clicking on a "Submit" button, prevent it from submitting a form. Clicking on a link, prevent the link from following the URL.
+    event.preventDefault();
+});
+</script>
+{% endblock %}
